@@ -1,152 +1,169 @@
 /**
- * FAJAX.js
- * -------------------------------------------------------
- * Fake AJAX implementation that simulates XMLHttpRequest.
- *
- * Responsibilities:
- * - Build REST-style requests
- * - Serialize data as JSON
- * - Send messages through Network
- * - Handle asynchronous responses
- * - Manage timeout and request matching
+ * @file FAJAX.js
+ * @description Fake AJAX — simulates XMLHttpRequest for client-server communication
  */
-
 class FXMLHttpRequest {
 
     /**
-     * Creates a new FAJAX request object.
-     *
-     * @param {Network} networkInstance
-     * @param {string} clientAddress
+     * @constructor
+     * @param {Network} networkInstance - The shared Network used for sending/receiving
+     * @param {string}  clientAddress   - Logical address of the calling client
      */
     constructor(networkInstance, clientAddress) {
-
-        this.network = networkInstance;
+        this.network       = networkInstance;
         this.clientAddress = clientAddress;
 
-        this.method = null;
-        this.url = null;
-        this.headers = {};
-        this.body = null;
+        // Request fields
+        this.method   = null;
+        this.url      = null;
+        this.headers  = {};
+        this.body     = null;
 
-        this.readyState = 0; // 0 = UNSENT
-        this.status = 0;
+        // Response fields
+        /** @type {0|1|2|4} */
+        this.readyState   = 0;
+        this.status       = 0;
         this.responseText = null;
 
+        // Callback
+        /** Called on every readyState change — set by the caller */
         this.onreadystatechange = null;
 
+        // Internal
+        /** Unique ID linking this request to its server response */
         this.requestId = this._generateRequestId();
-        this.timeoutDuration = 4000;
-        this._timeoutHandler = null;
 
-        // Register this instance as client
+        /** Timeout in ms before treating the request as lost */
+        this.timeoutDuration = 4000;
+
+        this._timeoutHandle = null;
+
+        // Register this object in the network so it can receive responses
         this.network.registerClient(this.clientAddress, this);
     }
 
+
+    //  PUBLIC API  (mirrors XMLHttpRequest interface)
+
     /**
-     * Initializes a request.
+     * Initializes the request with a method and URL.
+     * Sets readyState to OPENED (1).
+     *
+     * @param {string} method - "GET" | "POST" | "PUT" | "DELETE"
+     * @param {string} url    - Resource path, e.g. "/auth/login"
      */
     open(method, url) {
-        this.method = method;
-        this.url = url;
+        this.method    = method;
+        this.url       = url;
         this.readyState = 1; // OPENED
-        this._triggerStateChange();
+        this._triggerCallback();
     }
 
     /**
-     * Sets a request header.
+     * Sets a request header (e.g. Authorization token).
+     * Must be called after open() and before send().
+     *
+     * @param {string} key   - Header name
+     * @param {string} value - Header value
      */
     setRequestHeader(key, value) {
         this.headers[key] = value;
     }
 
     /**
-     * Sends the request through the network.
+     * Sends the request through the Network.
+     * Sets readyState to HEADERS_SENT (2) and starts the timeout timer.
+     *
+     * @param {Object|null} body - Request payload object (will be JSON-stringified)
      */
     send(body = null) {
-
-        this.body = body;
+        this.body      = body;
         this.readyState = 2; // HEADERS_SENT
-        this._triggerStateChange();
+        this._triggerCallback();
 
         const message = {
-            from: this.clientAddress,
-            to: this._extractServerAddress(),
+            from:      this.clientAddress,
+            to:        this._resolveServerAddress(),
             requestId: this.requestId,
-            method: this.method,
-            resource: this.url,
-            headers: this.headers,
-            body: JSON.stringify(body)
+            method:    this.method,
+            resource:  this.url,
+            headers:   this.headers,
+            body:      JSON.stringify(body)
         };
 
         this.network.send(message);
-
         this._startTimeout();
     }
 
     /**
-     * Receives response from network.
+     * Called by the Network when a message arrives at this client address.
+     * Ignores messages that do not match this request's ID.
+     * On match: stores response data, sets readyState to DONE (4).
+     *
+     * @param {Object} message - Incoming response from the Network
      */
     receive(message) {
-
-        // Ignore unrelated responses
+        // Ignore responses for other requests
         if (message.requestId !== this.requestId) return;
 
-        clearTimeout(this._timeoutHandler);
+        clearTimeout(this._timeoutHandle);
 
-        this.status = message.status;
+        this.status       = message.status;
         this.responseText = message.body;
-
-        this.readyState = 4; // DONE
-        this._triggerStateChange();
+        this.readyState   = 4; // DONE
+        this._triggerCallback();
     }
 
-    /**
-     * Extracts server address from URL.
-     * Example:
-     * /auth/login → auth-server
-     * /data/items → data-server
-     */
-    _extractServerAddress() {
+    
+    //  PRIVATE HELPERS
 
-        if (this.url.startsWith("/auth")) {
-            return "auth-server";
-        }
+    /**
+     * Determines the target server address from the URL.
+     * /auth/* → "auth-server"
+     * /data/* → "data-server"
+     *
+     * @returns {string} Server address
+     * @private
+     */
+    _resolveServerAddress() {
+        if (this.url.startsWith("/auth")) return "auth-server";
         return "data-server";
     }
 
     /**
-     * Handles timeout scenario.
+     * Starts the timeout timer.
+     * If no response arrives within timeoutDuration ms,
+     * sets status 408 (Request Timeout) and triggers callback.
+     * @private
      */
     _startTimeout() {
-
-        this._timeoutHandler = setTimeout(() => {
-
+        this._timeoutHandle = setTimeout(() => {
             if (this.readyState !== 4) {
-                this.status = 408; // Request Timeout
-                this.readyState = 4;
-                this.responseText = JSON.stringify({
-                    error: "Request Timeout"
-                });
-                this._triggerStateChange();
+                console.warn("[FAJAX] Request timed out:", this.requestId);
+                this.status       = 408; // Request Timeout
+                this.responseText = JSON.stringify({ error: "Request Timeout" });
+                this.readyState   = 4; // DONE
+                this._triggerCallback();
             }
-
         }, this.timeoutDuration);
     }
 
     /**
-     * Triggers onreadystatechange callback.
+     * Fires onreadystatechange if it has been set by the caller.
+     * @private
      */
-    _triggerStateChange() {
+    _triggerCallback() {
         if (typeof this.onreadystatechange === "function") {
             this.onreadystatechange();
         }
     }
 
     /**
-     * Generates unique request ID.
+     * Generates a unique request ID using timestamp + random hex.
+     * @returns {string}
+     * @private
      */
     _generateRequestId() {
-        return Date.now() + "-" + Math.random().toString(16).slice(2);
+        return "req_" + Date.now() + "_" + Math.random().toString(16).slice(2);
     }
 }

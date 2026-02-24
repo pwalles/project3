@@ -1,118 +1,123 @@
 /**
- * Network.js
- * -------------------------------------------------------
- * Simulates an unreliable asynchronous communication network
- * between clients and servers.
- *
- * Features:
- * - Random delay between 1–3 seconds for each message
- * - Controlled packet loss (10%–50%)
- * - Address-based routing
- * - Bidirectional communication (client ↔ server)
- *
- * The network does NOT interpret message logic.
- * It only transfers JSON messages between registered endpoints.
- */
+ * @file Network.js
+ * @description Simulates an unreliable communication network between clients and servers
+*/
 
 class Network {
 
     /**
-     * Creates a new simulated network.
-     *
-     * @param {number} dropProbability - Packet loss probability (0.1–0.5)
-     * @param {number} minDelay - Minimum delay in ms (default 1000)
-     * @param {number} maxDelay - Maximum delay in ms (default 3000)
+     * @constructor
+     * @param {number} dropProbability - Packet loss chance (0.1 to 0.5)
+     * @param {number} minDelay        - Minimum delivery delay in ms (default: 1000)
+     * @param {number} maxDelay        - Maximum delivery delay in ms (default: 3000)
      */
     constructor(dropProbability = 0.1, minDelay = 1000, maxDelay = 3000) {
-
         if (dropProbability < 0.1 || dropProbability > 0.5) {
-            throw new Error("Drop probability must be between 0.1 and 0.5");
+            throw new Error("Network: dropProbability must be between 0.1 and 0.5");
         }
 
         this.dropProbability = dropProbability;
-        this.minDelay = minDelay;
-        this.maxDelay = maxDelay;
+        this.minDelay        = minDelay;
+        this.maxDelay        = maxDelay;
 
+        /** @type {Object.<string, {receive: function}>} */
         this.clients = {};
+
+        /** @type {Object.<string, {receive: function}>} */
         this.servers = {};
     }
 
+
+    //  REGISTRATION
+
     /**
-     * Registers a client in the network.
-     * @param {string} address - Logical address of the client
-     * @param {object} clientInstance - Object with receive(message) method
+     * Registers a client so the network can deliver messages to it.
+     * @param {string} address          - Unique logical address (e.g. "client-123")
+     * @param {Object} clientInstance   - Must implement receive(message)
      */
     registerClient(address, clientInstance) {
         this.clients[address] = clientInstance;
     }
 
     /**
-     * Registers a server in the network.
-     * @param {string} address - Logical address of the server
-     * @param {object} serverInstance - Object with receive(message) method
+     * Registers a server so the network can deliver messages to it.
+     * @param {string} address          - Unique logical address (e.g. "auth-server")
+     * @param {Object} serverInstance   - Must implement receive(message)
      */
     registerServer(address, serverInstance) {
         this.servers[address] = serverInstance;
     }
 
+
+    //  SENDING
+
     /**
-     * Sends a message through the network.
-     * Applies packet loss and random delay.
+     * Sends a message through the simulated network.
+     * Applies packet loss check first, then delivers after a random delay.
      *
-     * @param {Object} message - JSON message object
+     * @param {Object} message - Message object with at least a "to" field
      */
     send(message) {
-
         // Simulate packet loss
         if (Math.random() < this.dropProbability) {
-            console.warn("Network: message dropped", message);
+            console.warn("[Network] Message DROPPED:", message);
             return;
         }
 
-        const delay = this._generateRandomDelay();
+        const delay = this._randomDelay();
+        console.log("[Network] Delivering to \"" + message.to + "\" in " + delay + "ms");
 
+        // Simulate network delay
         setTimeout(() => {
             this._deliver(message);
         }, delay);
     }
 
+
+    //  PRIVATE HELPERS
+
     /**
-     * Delivers the message to the correct recipient.
+     * Delivers a message to its intended recipient.
+     * Checks servers first, then clients.
      * @param {Object} message
+     * @private
      */
     _deliver(message) {
-
         const target = message.to;
 
         if (this.servers[target]) {
             this.servers[target].receive(message);
-        }
-        else if (this.clients[target]) {
+        } else if (this.clients[target]) {
             this.clients[target].receive(message);
-        }
-        else {
-            console.error("Network: target address not found:", target);
+        } else {
+            console.error("[Network] Unknown target address:", target);
         }
     }
 
     /**
-     * Generates a random delay between minDelay and maxDelay.
-     * @returns {number}
+     * Returns a random integer between minDelay and maxDelay.
+     * @returns {number} Delay in milliseconds
+     * @private
      */
-    _generateRandomDelay() {
+    _randomDelay() {
         return Math.floor(
             Math.random() * (this.maxDelay - this.minDelay) + this.minDelay
         );
     }
 
+
+    //  PUBLIC CONTROL
+
     /**
-     * Updates packet loss probability.
-     * @param {number} probability - Value between 0.1 and 0.5
+     * Updates the packet loss probability at runtime.
+     * Useful for testing different network conditions.
+     * @param {number} probability - New value between 0.1 and 0.5
      */
     setDropProbability(probability) {
         if (probability < 0.1 || probability > 0.5) {
-            throw new Error("Drop probability must be between 0.1 and 0.5");
+            throw new Error("Network: dropProbability must be between 0.1 and 0.5");
         }
         this.dropProbability = probability;
+        console.log("[Network] Drop probability set to:", probability);
     }
 }

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacts App</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <!--
+    ════════════════════════════════════════════════════════
+     GLOBAL UI
+    ════════════════════════════════════════════════════════
+    -->
+
+    <!-- Shown during any async request. Controlled by SPA.showLoading() -->
+    <div id="loading-indicator" style="display:none;">⏳ Loading...</div>
+
+    <!--
+    ════════════════════════════════════════════════════════
+     SPA PAGES
+     All pages are loaded in the browser at startup.
+     SPA.js shows one page at a time using display:block / none.
+     All start hidden (display:none).
+    ════════════════════════════════════════════════════════
+    -->
+
+    <!-- ╔══════════════════════════════╗ -->
+    <!-- ║  PAGE: LOGIN                 ║ -->
+    <!-- ╚══════════════════════════════╝ -->
+    <div id="page-login" style="display:none;">
+        <h1>Login</h1>
+
+        <form id="login-form">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" placeholder="Enter username" required />
+
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" required />
+
+            <button type="submit">Login</button>
+        </form>
+
+        <!-- Error / success messages shown here by SPA -->
+        <p id="login-error" style="display:none;"></p>
+
+        <p>No account? <a href="#" id="go-to-register">Register here</a></p>
+    </div>
+
+    <!-- ╔══════════════════════════════╗ -->
+    <!-- ║  PAGE: REGISTER              ║ -->
+    <!-- ╚══════════════════════════════╝ -->
+    <div id="page-register" style="display:none;">
+        <h1>Register</h1>
+
+        <form id="register-form">
+            <label for="reg-username">Username</label>
+            <input type="text" id="reg-username" placeholder="Choose a username" required />
+
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" placeholder="Enter email" required />
+
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" placeholder="Choose a password" required />
+
+            <label for="reg-confirm">Confirm Password</label>
+            <input type="password" id="reg-confirm" placeholder="Repeat password" required />
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p id="register-error" style="display:none;"></p>
+
+        <p>Already have an account? <a href="#" id="go-to-login">Login here</a></p>
+    </div>
+
+    <!-- ╔══════════════════════════════╗ -->
+    <!-- ║  PAGE: CONTACT LIST          ║ -->
+    <!-- ╚══════════════════════════════╝ -->
+    <div id="page-list" style="display:none;">
+        <h1>My Contacts</h1>
+
+        <div class="list-toolbar">
+            <input type="text" id="search-input" placeholder="🔍 Search contacts..." />
+            <button id="btn-add-contact">+ Add Contact</button>
+            <button id="btn-logout">Logout</button>
+        </div>
+
+        <p id="list-error" style="display:none;"></p>
+
+        <!-- Contact cards rendered here dynamically by SPA.renderList() -->
+        <div id="contacts-container"></div>
+    </div>
+
+    <!-- ╔══════════════════════════════╗ -->
+    <!-- ║  PAGE: CONTACT DETAIL        ║ -->
+    <!-- ╚══════════════════════════════╝ -->
+    <div id="page-detail" style="display:none;">
+        <h1>Contact Details</h1>
+
+        <p id="detail-error" style="display:none;"></p>
+
+        <!-- Populated dynamically by SPA.renderDetail() -->
+        <div class="detail-card">
+            <p><strong>Name:</strong>  <span id="detail-name"></span></p>
+            <p><strong>Phone:</strong> <span id="detail-phone"></span></p>
+            <p><strong>Email:</strong> <span id="detail-email"></span></p>
+            <p><strong>Note:</strong>  <span id="detail-note"></span></p>
+        </div>
+
+        <div class="detail-actions">
+            <button id="btn-edit-contact">✏️ Edit</button>
+            <button id="btn-delete-contact">🗑️ Delete</button>
+            <button id="btn-back-to-list">← Back</button>
+        </div>
+    </div>
+
+    <!-- ╔══════════════════════════════╗ -->
+    <!-- ║  PAGE: ADD / EDIT FORM       ║ -->
+    <!-- ╚══════════════════════════════╝ -->
+    <div id="page-form" style="display:none;">
+        <!-- Title changes to "Edit Contact" when editing -->
+        <h1 id="form-title">Add New Contact</h1>
+
+        <form id="contact-form">
+            <!-- Hidden: empty = add mode | filled = edit mode -->
+            <input type="hidden" id="form-contact-id" />
+
+            <label for="form-name">Name *</label>
+            <input type="text" id="form-name" placeholder="Full name" required />
+
+            <label for="form-phone">Phone</label>
+            <input type="tel" id="form-phone" placeholder="Phone number" />
+
+            <label for="form-email">Email</label>
+            <input type="email" id="form-email" placeholder="Email address" />
+
+            <label for="form-note">Note</label>
+            <textarea id="form-note" placeholder="Optional note"></textarea>
+
+            <div class="form-actions">
+                <button type="submit">💾 Save</button>
+                <button type="button" id="btn-cancel-form">Cancel</button>
+            </div>
+        </form>
+
+        <p id="form-error" style="display:none;"></p>
+    </div>
+
+    <!--
+    ════════════════════════════════════════════════════════
+     SCRIPTS — loaded in strict dependency order
+     Each layer depends only on the layers above it.
+    ════════════════════════════════════════════════════════
+    -->
+
+    <!-- Layer 1: Communication -->
+    <script src="js/communication/Network.js"></script>
+    <script src="js/communication/FAJAX.js"></script>
+
+    <!-- Layer 2: Databases -->
+    <script src="js/db/UsersDB.js"></script>
+    <script src="js/db/DataDB.js"></script>
+
+    <!-- Layer 3: Servers -->
+    <script src="js/servers/AuthServer.js"></script>
+    <script src="js/servers/DataServer.js"></script>
+
+    <!-- Layer 4: Client -->
+    <script src="js/client/App.js"></script>
+    <script src="js/client/SPA.js"></script>
+
+    <!-- Seed data -->
+    <script src="data/initialData.js"></script>
+
+    <!-- Bootstrap (must be last) -->
+    <script src="js/main.js"></script>
+
+</body>
+</html>
