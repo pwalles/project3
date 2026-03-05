@@ -1,3 +1,4 @@
+
 class ListView {
     constructor(app, router) {
         this.app = app;
@@ -10,7 +11,7 @@ class ListView {
         container.addEventListener("click", (e) => {
             const card = e.target.closest(".contact-card");
             if (card) {
-                const id = card.dataset.id; // שליפת ה-ID מה-Data Attribute
+                const id = card.dataset.id; 
                 this.router.navigateTo("detail", { id: id });
             }
         });

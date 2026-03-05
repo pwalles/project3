@@ -1,4 +1,4 @@
-/* איפוס בסיסי והגדרת גופנים */
+/* Basic reset and font settings */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -7,32 +7,32 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6; /* מרווח טוב בין שורות */
-    background-color: #f0f4f8; /* רקע תכלת-אפרפר בהיר ונעים */
-    color: #333; /* צבע טקסט כהה וקריא */
+    line-height: 1.6;
+    background-color: #f0f4f8;
+    color: #333;
     padding: 20px;
 }
 
-/* מיכל ראשי למרכוז התוכן ויצירת מרווחים בצדדים */
+/* Main container */
 #app-root {
-    max-width: 600px; /* רוחב מקסימלי לאפליקציה */
-    margin: 40px auto; /* מרכוז באמצע המסך */
-    background-color: #fff; /* רקע לבן לכרטיסייה הראשית */
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #fff;
     padding: 30px;
-    border-radius: 12px; /* פינות עגולות */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* צל עדין שנותן עומק */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* כותרות */
+/* Headings */
 h1 {
     text-align: center;
     color: #2c3e50;
     margin-bottom: 25px;
     font-weight: 600;
-    letter-spacing: 0.5px; /* מרווח קל בין אותיות */
+    letter-spacing: 0.5px;
 }
 
-/* עיצוב טפסים */
+/* Form styling */
 form {
     display: flex;
     flex-direction: column;
@@ -58,16 +58,16 @@ input[type="tel"] {
 
 input:focus {
     outline: none;
-    border-color: #3498db; /* צבע כחול בהתפקסות */
+    border-color: #3498db;
 }
 
-/* עיצוב כפתורים */
+/* Button styling */
 button {
     padding: 12px 20px;
     font-size: 16px;
     font-weight: bold;
     color: #fff;
-    background-color: #3498db; /* כפתור כחול ראשי */
+    background-color: #3498db;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -75,11 +75,11 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9; /* כחול כהה יותר במעבר עכבר */
+    background-color: #2980b9;
 }
 
 button:active {
-    transform: scale(0.98); /* אפקט לחיצה עדין */
+    transform: scale(0.98);
 }
 
 button:disabled {
@@ -87,28 +87,28 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* כפתורים משניים (כמו ביטול) */
+/* Secondary buttons */
 #btn-cancel-form, #btn-back-to-list, #btn-logout {
-    background-color: #e74c3c; /* אדום */
+    background-color: #e74c3c;
     margin-left: 10px;
 }
 #btn-cancel-form:hover, #btn-back-to-list:hover, #btn-logout:hover {
     background-color: #c0392b;
 }
 
-/* סרגל כלים ברשימה */
+/* List toolbar */
 .list-toolbar {
     display: flex;
-    gap: 10px; /* מרווח בין האלמנטים בסרגל */
+    gap: 10px;
     margin-bottom: 25px;
 }
 
 #search-input {
-    flex-grow: 1; /* תיבת החיפוש תתפוס את רוב המקום */
-    margin-bottom: 0; /* ביטול המרווח התחתון הרגיל של input */
+    flex-grow: 1;
+    margin-bottom: 0;
 }
 
-/* כרטיסיות אנשי קשר */
+/* Contact cards */
 .contact-card {
     background-color: #fff;
     border: 1px solid #eee;
@@ -137,7 +137,7 @@ button:disabled {
     font-size: 14px;
 }
 
-/* כרטיס פרטים */
+/* Detail card */
 .detail-card {
     background-color: #f9f9f9;
     padding: 20px;
@@ -155,7 +155,7 @@ button:disabled {
     justify-content: flex-end;
 }
 
-/* קישורים והודעות שגיאה */
+/* Links and error messages */
 a {
     color: #3498db;
     text-decoration: none;
@@ -174,7 +174,7 @@ p[id$="-error"] {
     margin-top: 20px;
 }
 
-/* חיווי טעינה */
+/* Loading indicator */
 #loading-indicator {
     position: fixed;
     top: 20px;
@@ -192,6 +192,6 @@ p[id$="-error"] {
     display: block;
     color: #7f8c8d;
     font-size: 12px;
-    margin-top: -15px; /* מצמצם את הרווח שנוצר מה-input */
+    margin-top: -15px;
     margin-bottom: 15px;
 }

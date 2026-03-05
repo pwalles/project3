@@ -1,3 +1,15 @@
+
+/* A department that "mock network layer" and simulates message passing. 
+It doesn't do real HTTP, but only:
+
+Keeps a list of clients and servers by address.
+
+Allows you to send a message to a specific address.
+
+Simulates random delays  and random message removal, to test how the application handles network unreliability.
+
+*/
+
 class Network {
     constructor(dropProbability = 1, minDelay = 1000, maxDelay = 3000) {
         if (dropProbability <0.1 || dropProbability > 0.5) {
