@@ -10,7 +10,7 @@ Simulates random delays  and random message removal, to test how the application
 */
 
 class Network {
-    constructor(dropProbability = 1, minDelay = 1000, maxDelay = 3000) {
+    constructor(dropProbability = 0.3, minDelay = 1000, maxDelay = 3000) {
         // Validating the drop probability to be within a required range.
         if (dropProbability <0.1 || dropProbability > 0.5) { 
             throw new Error("Network: dropProbability must be between 0.1 and 0.5");
