@@ -1,18 +1,23 @@
-    /* 
-     The AuthServer class is responsible for handling user authentication and
-     registration. It interacts with a users database and manages active sessions.
-     It also implements a caching mechanism to store recent responses
-     for identical requests, improving performance and reducing redundant
-     processing. The server communicates with clients through a network interface,
-     simulating real-world conditions such as message delays and potential drops.
-    */
+/* A class that is an authentication server that handles registration and login operations.
+
+The server receives requests from the client over the network, 
+parses the request according to the type of operation and path, 
+checks the data against UsersDB, and if everything is correct, 
+returns a response to the client. 
+
+It also manages tokens of connected users using the activeSessions object, 
+to enable authentication of future requests.
+*/
 
 class AuthServer {
     constructor(network, usersDB) {
         this.network = network;
         this.usersDB = usersDB;
-        this.activeSessions = {};
-        this.responsesCache = new Map(); // Cache to store recent responses for identical requests
+        this.activeSessions = {}; // An object that holds all active sessions.
+        // Cache to store recent responses for identical requests.
+        // If the same request is sent again – 
+        // the server will return a response from the cache instead of processing it again.
+        this.responsesCache = new Map(); 
     }
 
     /* Handles incoming messages from the network, processes authentication
@@ -22,6 +27,7 @@ class AuthServer {
         if (this.responsesCache.has(message.requestId)) {
             const cached = this.responsesCache.get(message.requestId);
             console.warn("[AuthServer] Returning CACHED response for ID:", message.requestId);
+            // Returns the saved answer.
             return this._respond(message, cached.status, cached.payload);
         }
 
@@ -55,7 +61,7 @@ class AuthServer {
     }
 
     /* Handles user login requests. It validates the credentials,
-     generates a session token, and sends a response back to the client with
+    generates a session token, and sends a response back to the client with
     the token and user information.*/
     _handleLogin(message, body) {
         const { username, password } = body;

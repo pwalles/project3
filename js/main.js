@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     const network = new Network(0.1, 1000, 3000);
     const usersDB = new UsersDB();

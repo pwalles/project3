@@ -1,4 +1,4 @@
-/* A department that "mock network layer" and simulates message passing. 
+/* A class that "mock network layer" and simulates message passing. 
 It doesn't do real HTTP, but only:
 
 Keeps a list of clients and servers by address.
