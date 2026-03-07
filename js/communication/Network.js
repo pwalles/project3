@@ -34,7 +34,7 @@ class Network {
     }
 
     /* Simulates sending a message through the network. It randomly decides
-       whether to drop the message or to deliver it after a random delay.*/
+    whether to drop the message or to deliver it after a random delay.*/
     send(message) {
         if (Math.random() < this.dropProbability) { 
             console.warn("[Network] Message DROPPED:", message);
@@ -49,7 +49,7 @@ class Network {
     }
    
     /* Delivers the message to the target address. It checks if the target
-     is a registered server or client and calls their receive method.*/
+    is a registered server or client and calls their receive method.*/
     _deliver(message) {
         const target = message.to;
 
