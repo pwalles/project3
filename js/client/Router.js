@@ -11,6 +11,9 @@ class Router {
 
     constructor(app) {
         this.app              = app;
+
+        // This is the main element where all screens are displayed.
+        // When you move a page, you clear it and insert a new template.
         this.appRoot          = document.getElementById("app-root");
         this.loadingIndicator = document.getElementById("loading-indicator");
     }
@@ -29,7 +32,7 @@ class Router {
             params = {};
         }
 
-        // Redirect to login if user tries to access a protected page without being logged in
+        // Redirect to login if user tries to access a protected page without being logged in.
         var protectedPages = ["list", "detail", "form"];
         var i;
         for (i = 0; i < protectedPages.length; i++) {
@@ -39,18 +42,18 @@ class Router {
             }
         }
 
-        // Clear the current page content
+        // Clear the current page content.
         this.appRoot.innerHTML = "";
 
-        // Clone the HTML template for this page and insert it into the DOM
+        // Clone the HTML template for this page and insert it into the DOM.
         var template = document.getElementById("tpl-" + pageName);
         if (!template) {
             console.error("Template not found: tpl-" + pageName);
             return;
         }
+        // The content of the template is cloned and appended to app-root.
         var clone = template.content.cloneNode(true);
         this.appRoot.appendChild(clone);
-
         this._initView(pageName, params);
     }
 

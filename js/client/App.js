@@ -13,10 +13,12 @@ class App {
 
     constructor(network) {
         this.network       = network;
+        // The address of this client on the network.
         this.clientAddress = "client-" + Date.now();
         this.currentUser   = null; // { userId, username } after login, null otherwise
         this.token         = null; // Session token after login, null otherwise
         this.maxRetries    = 3;    // Maximum number of retry attempts on timeout
+        // Here the app registers itself on the network to receive messages.
         this.network.registerClient(this.clientAddress, this);
     }
 
@@ -31,6 +33,8 @@ class App {
     login(username, password, callback) {
         var self = this;
         this._request("POST", "/auth/login", { username: username, password: password }, function(err, response) {
+            // If the server returned an error, 
+            // the token is not saved and the error is passed to the View.
             if (err) {
                 callback(err, null);
                 return;
@@ -38,6 +42,7 @@ class App {
             // Store session state so all future requests are authenticated
             self.token       = response.token;
             self.currentUser = { userId: response.userId, username: response.username };
+            // Only now does the View receive success.
             callback(null, response);
         });
     }
@@ -83,10 +88,14 @@ class App {
     /* Searches contacts by a text query against all fields.
     Calls callback(err, data) when the server responds. */
     searchContacts(query, callback) {
+        // A dynamic URL is built. 
+        // For example, if the user searched for David Cohen, 
+        // the URL would be /data/contacts?search=David%20Cohen
         this._request("GET", "/data/contacts?search=" + encodeURIComponent(query), null, callback);
     }
 
-    /* Core request method. Creates a new FXMLHttpRequest, sends it over the network,
+    /* Core request method. 
+    Creates a new FXMLHttpRequest, sends it over the network,
     and handles the response via onreadystatechange (callback-based).
     Automatically retries up to maxRetries times on timeout (status 408),
     with an increasing delay between attempts. */
@@ -95,21 +104,29 @@ class App {
             attempt = 1;
         }
 
+        // Inside internal functions, this doesn't always point to the original object. 
+        // That's why a reference to it is kept in a variable.
         var self = this;
+
+        // An object is created that simulates XMLHttpRequest.
         var xhr  = new FXMLHttpRequest(this.network, this.clientAddress);
 
         xhr.onreadystatechange = function() {
+
+            // The code only handles when the request has finished.
             if (xhr.readyState !== 4) return;
 
-            // Timeout — retry with increasing delay if attempts remain
+            // The server didn't respond in time, or the network is down.
             if (xhr.status === 408) {
                 if (attempt < self.maxRetries) {
+                    // The system gives the network time to recover.
                     var delay = 1000 * attempt;
                     console.warn("[App] Timeout on attempt " + attempt + "/" + self.maxRetries + ", retrying in " + delay + "ms: " + url);
+                    // The same request is sent again after a delay, with an incremented attempt count.
                     setTimeout(function() {
                         self._request(method, url, body, callback, attempt + 1);
                     }, delay);
-                } else {
+                } else { // After max retries, the error is reported to the View.
                     callback({ error: "Network exhausted after " + self.maxRetries + " attempts", status: 408 }, null);
                 }
                 return;
@@ -125,7 +142,7 @@ class App {
                 return;
             }
 
-            // 2xx = success, anything else = server-side error
+            // 2xx = success, anything else = error
             if (xhr.status >= 200 && xhr.status < 300) {
                 callback(null, responseBody);
             } else {
@@ -133,8 +150,12 @@ class App {
             }
         };
 
+        // The request is sent over the network via the FAJAX instance.
         xhr.open(method, url);
+        // Header definition
         xhr.setRequestHeader("Content-Type", "application/json");
+        // If the user is logged in, 
+        // the session token is attached to the request headers for authentication.
         if (this.token) {
             // Attach the session token so the server can authenticate the request
             xhr.setRequestHeader("Authorization", this.token);
