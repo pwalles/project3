@@ -1,51 +1,84 @@
+/* A class that handles the Register page UI.
+
+It validates password strength and confirmation on the client side,
+then calls app.register() when the form is submitted.
+On success, navigates to the Login page.
+*/
+
 class RegisterView {
+
     constructor(app, router) {
-        this.app = app;
+        this.app    = app;
         this.router = router;
     }
 
+    /* Initializes the view by attaching event listeners to the register form
+    and the login navigation link.
+    Called once by Router after the template is inserted into the DOM. */
     init() {
-        const form = document.getElementById("register-form");
-        document.getElementById("go-to-login").addEventListener("click", () => this.router.navigateTo("login"));
+        var self = this;
+        var form = document.getElementById("register-form");
 
-        form.addEventListener("submit", async (e) => {
+        // Navigate back to the Login page when the link is clicked
+        document.getElementById("go-to-login").addEventListener("click", function() {
+            self.router.navigateTo("login");
+        });
+
+        // Handle register form submission
+        form.addEventListener("submit", function(e) {
             e.preventDefault();
-            const submitBtn = document.getElementById("btn-reg-submit");
-            const pass = document.getElementById("reg-password").value;
-            const confirm = document.getElementById("reg-confirm").value;
 
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-            if (!passwordRegex.test(pass)) {
-                this._showError("Password must contain at least 6 characters, including a letter and a number.");
+            var submitBtn = document.getElementById("btn-reg-submit");
+            var pass      = document.getElementById("reg-password").value;
+            var confirm   = document.getElementById("reg-confirm").value;
+
+            // Validate password: at least 6 characters, one letter and one digit
+            var hasLetter = false;
+            var hasDigit  = false;
+            var i;
+            for (i = 0; i < pass.length; i++) {
+                if ((pass[i] >= "a" && pass[i] <= "z") || (pass[i] >= "A" && pass[i] <= "Z")) {
+                    hasLetter = true;
+                }
+                if (pass[i] >= "0" && pass[i] <= "9") {
+                    hasDigit = true;
+                }
+            }
+            if (pass.length < 6 || !hasLetter || !hasDigit) {
+                self._showError("Password must contain at least 6 characters, including a letter and a number.");
                 return;
             }
 
+            // Confirm that both password fields match
             if (pass !== confirm) {
-                this._showError("Passwords do not match");
+                self._showError("Passwords do not match");
                 return;
             }
+
+            var username = document.getElementById("reg-username").value;
+            var email    = document.getElementById("reg-email").value;
 
             submitBtn.disabled = true;
-            this.router.showLoading(true);
+            self.router.showLoading(true);
 
-            try {
-                const username = document.getElementById("reg-username").value;
-                const email = document.getElementById("reg-email").value;
-                await this.app.register(username, pass, email);
-                alert("Registered successfully!");
-                this.router.navigateTo("login");
-            } catch (err) {
-                this._showError(err.error || "Registration failed");
-            } finally {
+            // Send register request — callback handles success and error
+            self.app.register(username, pass, email, function(err, response) {
+                if (err) {
+                    self._showError(err.error || "Registration failed");
+                } else {
+                    alert("Registered successfully!");
+                    self.router.navigateTo("login");
+                }
                 submitBtn.disabled = false;
-                this.router.showLoading(false);
-            }
+                self.router.showLoading(false);
+            });
         });
     }
 
+    /* Displays an error message on the register page. */
     _showError(msg) {
-        const el = document.getElementById("register-error");
-        el.textContent = msg;
+        var el           = document.getElementById("register-error");
+        el.textContent   = msg;
         el.style.display = "block";
     }
 }

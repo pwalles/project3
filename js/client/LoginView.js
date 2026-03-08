@@ -1,43 +1,56 @@
+/* A class that handles the Login page UI.
+
+It reads username and password from the form,
+calls app.login() when the form is submitted,
+and navigates to the contact list on success.
+*/
 class LoginView {
+
     constructor(app, router) {
-        this.app = app;
+        this.app    = app;
         this.router = router;
     }
 
+    /* Initializes the view by attaching event listeners to the login form
+    and the register navigation link.
+    Called once by Router after the template is inserted into the DOM. */
     init() {
-        const form = document.getElementById("login-form");
-        const registerLink = document.getElementById("go-to-register");
+        var self         = this;
+        var form         = document.getElementById("login-form");
+        var registerLink = document.getElementById("go-to-register");
 
-        registerLink.addEventListener("click", (e) => {
+        // Navigate to the Register page when the link is clicked
+        registerLink.addEventListener("click", function(e) {
             e.preventDefault();
-            this.router.navigateTo("register");
+            self.router.navigateTo("register");
         });
 
-        form.addEventListener("submit", async (e) => {
+        // Handle login form submission
+        form.addEventListener("submit", function(e) {
             e.preventDefault();
-            
-            const username = document.getElementById("login-username").value.trim();
-            const password = document.getElementById("login-password").value.trim();
-            const submitBtn = document.getElementById("btn-login-submit");
-            const errorMsg = document.getElementById("login-error");
+
+            var username  = document.getElementById("login-username").value.trim();
+            var password  = document.getElementById("login-password").value.trim();
+            var submitBtn = document.getElementById("btn-login-submit");
+            var errorMsg  = document.getElementById("login-error");
 
             errorMsg.style.display = "none";
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = "⏳ Logging in...";
-            this.router.showLoading(true);
+            submitBtn.disabled     = true;
+            submitBtn.textContent  = "Logging in...";
+            self.router.showLoading(true);
 
-            try {
-                await this.app.login(username, password);
-                this.router.navigateTo("list"); // מעבר לרשימה בהצלחה
-            } catch (err) {
-                errorMsg.textContent = err.error || "Login failed.";
-                errorMsg.style.display = "block";
-            } finally {
-                submitBtn.disabled = false;
+            // Send login request — callback handles success and error
+            self.app.login(username, password, function(err, response) {
+                if (err) {
+                    errorMsg.textContent   = err.error || "Login failed.";
+                    errorMsg.style.display = "block";
+                } else {
+                    self.router.navigateTo("list");
+                }
+                submitBtn.disabled    = false;
                 submitBtn.textContent = "Login";
-                this.router.showLoading(false);
-            }
+                self.router.showLoading(false);
+            });
         });
     }
 }
