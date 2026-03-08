@@ -2,7 +2,7 @@
 to make sure that all the elements exist before the JavaScript starts working.
 If we don't wait - the code may try to use elements that don't yet exist. */
 document.addEventListener("DOMContentLoaded", function () {
-    
+
     /* Create an object that simulates a real internet network.
 
     0.1 → 10% chance that the request will fail.
@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // A class that manages contacts data.
     const dataDB  = new DataDB();
-
-    // If the usersDB and dataDB are empty, they are filled with sample data.
-    seedIfEmpty(usersDB, dataDB);
 
     // The authentication server and data server are created 
     // and registered in the network.
