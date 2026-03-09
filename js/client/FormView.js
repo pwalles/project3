@@ -105,21 +105,17 @@ class FormView {
 
             // Shared callback for both add and update responses.
             function onSaved(err, res) {
-                // Returning the button to normal position.
+                if (!document.getElementById("btn-form-submit")) return;
+                
                 submitBtn.disabled    = false;
                 submitBtn.textContent = "Save";
-                // hiding the loading state.
                 self.router.showLoading(false);
                 if (err) {
-                    var errorMsg           = document.getElementById("form-error");
-                    // If the server responded with an error message, show it. 
-                    // Otherwise, show a generic error.
+                    var errorMsg = document.getElementById("form-error");
                     errorMsg.textContent   = err.error || "Save failed.";
-                    // The error message is made visible in case it was hidden.
                     errorMsg.style.display = "block";
                     return;
                 }
-                // If the save is successful, navigate back to the contact list.
                 self.router.navigateTo("list");
             }
 
