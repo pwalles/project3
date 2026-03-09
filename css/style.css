@@ -8,9 +8,11 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    background-color: #f0f4f8;
+    background-color: #f4f7f6;
+    background-image: radial-gradient(#bcdaed 2px, transparent 2px, transparent 40px);
     color: #333;
     padding: 20px;
+    background-size: 40px 40px;
 }
 
 /* Main container */
