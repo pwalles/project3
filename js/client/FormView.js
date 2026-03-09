@@ -89,6 +89,8 @@ class FormView {
             // Get the values from the form fields and trim whitespace.
             var name      = document.getElementById("form-name").value.trim();
             var phone     = document.getElementById("form-phone").value.trim();
+            var email     = document.getElementById("form-email").value.trim();
+            var note      = document.getElementById("form-note").value.trim();
             var submitBtn = document.getElementById("btn-form-submit");
             
             // Simple validation: check that name and phone are not empty.
@@ -122,9 +124,9 @@ class FormView {
             // If contactId is set, we are in edit mode and should update the contact.
             // Otherwise, we are in add mode and should create a new contact.
             if (self.contactId) {
-                self.app.updateContact(self.contactId, { name: name, phone: phone }, onSaved);
+                self.app.updateContact(self.contactId, { name: name, phone: phone, email: email, note: note }, onSaved);
             } else {
-                self.app.addContact({ name: name, phone: phone }, onSaved);
+                self.app.addContact({ name: name, phone: phone, email: email, note: note }, onSaved);
             }
         });
     }
@@ -134,6 +136,8 @@ class FormView {
         document.getElementById("form-contact-id").value = data.id    || "";
         document.getElementById("form-name").value       = data.name  || "";
         document.getElementById("form-phone").value      = data.phone || "";
+        document.getElementById("form-email").value    = data.email || "";
+        document.getElementById("form-note").value       = data.note || "";
     }
 
     /* Displays an error message on the form page. */
