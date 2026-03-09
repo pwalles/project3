@@ -31,8 +31,8 @@ class FXMLHttpRequest {
         // It will be called every time the readyState changes.
         this.onreadystatechange = null;
         this.requestId = this._generateRequestId();
-        // If the server doesn't respond within 4 seconds, the request fails.
-        this.timeoutDuration = 4000;
+        // If the server doesn't respond within 7 seconds, the request fails.
+        this.timeoutDuration = 7000;
         // Saves the timer ID so that it can be canceled when a response arrives.
         this._timeoutHandle = null;
         // Here the object is registered on the network.
